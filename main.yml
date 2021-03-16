@@ -1,0 +1,58 @@
+---
+- hosts: testground
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+    root_db_password: Password123
+  roles:
+    - role: pbis
+
+  tasks:
+
+    - name: Install MySQL Community Repo
+      dnf:
+        name: community-mysql-server.x86_64
+        state: present
+      become: yes
+
+    - name: Install PyMySQL.
+      dnf:
+        name: python3-PyMySQL.noarch
+        state: present
+      become: yes
+
+    - name: Install MySQL Server
+      yum: name=mysql-server state=present
+      become: yes
+
+    - name: Start MySQL Server and enable it
+      service: name=mysqld state=started enabled=yes
+      become: yes
+
+    - name: Remove Test database if it exist.
+      mysql_db: name=test state=absent
+      become: yes
+
+  handlers:
+    - name: restart PowerBroker
+      service:
+        name: lwsmd.service
+        state: restarted
+      become: yes
+
+
+#    - name: Restart server.
+#      become: yes
+#      reboot:
+#        reboot_timeout: 180
+
+#    - name: Output ansible_hostname
+#      debug: msg=”Hostname is {{ansible_hostname}}”
+
+#    - name: Change root password
+#      become: yes
+#      mysql_user: name=root host={{item}} password={{root_db_password}}
+#      with_items:
+#        – “{{ansible_hostname}}”
+#        – 127.0.0.1
+#        – ::1
+#        – localhost
