@@ -16,9 +16,19 @@
 - debug: msg="{{ cleaner.stdout }}"
 
 - name: Install libnsl package required for pbis on Fedora.
+  become: yes
   dnf:
     name: libnsl
     state: present
+
+- name: Set disable SE status in order to be able to install pbis and restart lwsmd service.
+  become: yes
+  shell:
+    cmd: setenforce 0
+    cmd: sestatus
+  register: SE
+
+- debug: msg="{{ SE.stdout }}"
 
 - name: Install pbis open for AD integration
   dnf:
@@ -33,6 +43,7 @@
     enabled: yes
 
 - name: Create AD file and add users & groups
+  become: yes
   blockinfile:
     dest: /etc/sudoers.d/AD
     create: yes
