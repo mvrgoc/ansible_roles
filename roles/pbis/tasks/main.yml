@@ -15,6 +15,11 @@
 
 - debug: msg="{{ cleaner.stdout }}"
 
+- name: Install libnsl package required for pbis on Fedora.
+  dnf:
+    name: libnsl
+    state: present
+
 - name: Install pbis open for AD integration
   dnf:
     name: pbis-open
@@ -27,6 +32,16 @@
     state: started
     enabled: yes
 
+- name: Create AD file and add users & groups
+  blockinfile:
+    dest: /etc/sudoers.d/AD
+    create: yes
+    block: |
+      Defaults	timestamp_timeout=30
+      %domain^admins ALL=(ALL:ALL) NOPASSWD:ALL
+      %techops ALL=(ALL:ALL) NOPASSWD:ALL
+      %netops ALL=(ALL:ALL) NOPASSWD:ALL
+
 - name: Configure pbis
   become: yes
   shell: |
@@ -38,6 +53,6 @@
       /opt/pbis/bin/config remotehomedirtemplate %H/%U/share_mount
       /opt/pbis/bin/config syncsystemtime false
       /opt/pbis/bin/config assumedefaultdomain true
-      touch /etc/sudoers.d/AD && chmod 400 /etc/sudoers.d/AD
+      chmod 400 /etc/sudoers.d/AD
   notify:
       - restart PowerBroker
