@@ -1,5 +1,5 @@
 ---
-- hosts: testground
+- hosts: fedora-desk
   vars:
     ansible_python_interpreter: "/usr/bin/python3"
     root_db_password: Password123
